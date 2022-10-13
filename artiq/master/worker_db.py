@@ -111,6 +111,8 @@ class DatasetManager:
         self._broadcaster = Notifier(dict())
         self.local = dict()
         self.archive = dict()
+        self.custom_groups = dict()
+        self.custom_metadata = dict()
 
         self.ddb = ddb
         self._broadcaster.publish = ddb.update
@@ -171,6 +173,30 @@ class DatasetManager:
         archive_group = f.create_group("archive")
         for k, v in self.archive.items():
             _write(archive_group, k, v)
+
+        if self.custom_groups:
+            _set_custom_groups(f, {"custom_groups", self.custom_groups})
+        
+        if self.custom_metadata:
+            _set_custom_metadata(f["custom_groups"], self.custom_metadata)
+
+def _set_custom_groups(root, grp):
+    for k, v in grp.items():
+        isinstance(v, dict):
+            k_group = root.create_group(k)
+            save_group(k_group, v)
+        else:
+            _write(root, k, v)
+
+def _set_custom_metadata(root, custom_metadata):
+    for i in custom_metadata:
+        def set_attrs(name, object):
+            if name == i:
+                for k, v in custom_metadata[i].items():
+                    object.attrs[k] = v
+                return name
+        if not root.visititems(set_attrs):
+            logger.warning("Dataset or group '%s' is not found", i, stack_info=True) 
 
 
 def _write(group, k, v):
