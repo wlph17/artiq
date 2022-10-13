@@ -182,9 +182,9 @@ class DatasetManager:
 
 def _set_custom_groups(root, grp):
     for k, v in grp.items():
-        isinstance(v, dict):
+        if isinstance(v, dict):
             k_group = root.create_group(k)
-            save_group(k_group, v)
+            _set_custom_groups(k_group, v)
         else:
             _write(root, k, v)
 
@@ -197,7 +197,6 @@ def _set_custom_metadata(root, custom_metadata):
                 return name
         if not root.visititems(set_attrs):
             logger.warning("Dataset or group '%s' is not found", i, stack_info=True) 
-
 
 def _write(group, k, v):
     # Add context to exception message when the user writes a dataset that is
